@@ -1,13 +1,15 @@
 import torch
 import pickle
+import random
 import numpy as np
 from tqdm import tqdm
-from baseModel import AutoEncoder
+from models.baseModel import AutoEncoder
 from config import Config
+from scipy.stats import pearsonr
 
-trainData = pickle.load(open('/data/theodoroubp/imageGen/trainData.pkl', 'rb'))
+trainData = pickle.load(open('/data/theodoroubp/imageGen/data/trainData.pkl', 'rb'))
 trainData = [d for d in trainData if d[2] is not None]
-valData = pickle.load(open('/data/theodoroubp/imageGen/valData.pkl', 'rb'))
+valData = pickle.load(open('/data/theodoroubp/imageGen/data/valData.pkl', 'rb'))
 valData = [d for d in valData if d[2] is not None]
 
 config = Config()
@@ -20,6 +22,7 @@ EMBED_DIM = config.embed_dim
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 IMAGE_DIM = len(trainData[0][1])
 COND_DIM = len(trainData[0][0]) + IMAGE_DIM
+NUM_RUNS = config.num_runs
 
 BETA_START = config.beta_start
 BETA_END = config.beta_end
@@ -39,6 +42,25 @@ def get_batch(dataset, loc, batch_size):
 
     return imageData.to(DEVICE), condData.to(DEVICE)
 
+def sample(model, labels):
+    n = len(labels)
+    model.eval()
+    with torch.inference_mode():
+        x = torch.randn((n, IMAGE_DIM)).to(DEVICE)
+        for timestep in tqdm(reversed(range(1, NOISE_STEPS)), leave=False):
+            t = (torch.ones(n) * timestep).long().to(DEVICE)
+            predicted_noise = model(x, t, labels)
+            alpha = ALPHA[t][:, None].to(DEVICE)
+            alpha_hat = ALPHA_HAT[t][:, None].to(DEVICE)
+            beta = BETA[t][:, None].to(DEVICE)
+            if i > 1:
+                noise = torch.randn_like(x, device=DEVICE)
+            else:
+                noise = torch.zeros_like(x, device=DEVICE)
+            x = 1 / torch.sqrt(alpha) * (x - ((1 - alpha) / (torch.sqrt(1 - alpha_hat))) * predicted_noise) + torch.sqrt(beta) * noise
+    x = x.clamp(-1,1)
+    return x
+
 def sample_timesteps(n):
     return torch.randint(low=1, high=NOISE_STEPS, size=(n,)).to(DEVICE)
 
@@ -49,50 +71,58 @@ def noise_images(x, t):
     Ɛ = torch.randn_like(x)
     return sqrt_alpha_hat * x + sqrt_one_minus_alpha_hat * Ɛ, Ɛ
 
-model = AutoEncoder(IMAGE_DIM, embed_dim=EMBED_DIM, condition=True, cond_dim=COND_DIM).to(DEVICE)
-optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+for run in tqdm(range(NUM_RUNS), desc='Base Runs'):
+    random.seed(run)
+    torch.manual_seed(run)
+    np.random.seed(run)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(run)
 
-patience = 0
-global_loss = 1e10
-mse = torch.nn.MSELoss()
-for e in range(EPOCHS):
-    np.random.shuffle(trainData)
-    train_losses = []
-    model.train()
-    for i in tqdm(range(0, len(trainData), BATCH_SIZE), leave=False):
-        imageData, condData = get_batch(trainData, i, BATCH_SIZE)
-        t = sample_timesteps(len(imageData))
-        imageDataNoise, noise = noise_images(imageData, t)
-        predictedNoise = model(imageDataNoise, t, condData)
-        loss = mse(noise, predictedNoise)
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        train_losses.append(loss.detach().cpu().item())
+    model = AutoEncoder(IMAGE_DIM, embed_dim=EMBED_DIM, condition=True, cond_dim=COND_DIM).to(DEVICE)
+    optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 
-    val_losses = []
-    model.eval()
-    with torch.inference_mode():
-        for i in tqdm(range(0, len(valData), BATCH_SIZE), leave=False):
-            imageData, condData = get_batch(valData, i, BATCH_SIZE)
+    patience = 0
+    maxCorrelation = -1
+    mse = torch.nn.MSELoss()
+    for e in range(EPOCHS):
+        np.random.shuffle(trainData)
+        train_losses = []
+        model.train()
+        for i in tqdm(range(0, len(trainData), BATCH_SIZE), leave=False):
+            imageData, condData = get_batch(trainData, i, BATCH_SIZE)
             t = sample_timesteps(len(imageData))
             imageDataNoise, noise = noise_images(imageData, t)
             predictedNoise = model(imageDataNoise, t, condData)
             loss = mse(noise, predictedNoise)
-            val_losses.append(loss.detach().cpu().item())
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            train_losses.append(loss.detach().cpu().item())
 
-        currTrainLoss = np.mean(train_losses)
-        currValLoss = np.mean(val_losses)
-        print(f'Epoch: {e}; Train Loss: {currTrainLoss}; Validation Loss: {currValLoss}')
-        if currValLoss < global_loss:
-            patience = 0
-            global_loss = currValLoss
-            torch.save({
-                'model': model.state_dict(),
-                'optimizer': optimizer,
-                'epoch': e
-            }, '/data/theodoroubp/imageGen/save/base_model')
-        else:
-            patience += 1
-            if patience == PATIENCE:
-                break
+        val_samples = []
+        val_correlations = []
+        model.eval()
+        with torch.inference_mode():
+            for i in tqdm(range(0, len(trainData), BATCH_SIZE), leave=False):
+                imageData, condData = get_batch(trainData, i, BATCH_SIZE)
+                sampleImages = sample(model, condData)
+                for j in range(len(sampleImages)):
+                    val_samples.append(sampleImages[j].detach().cpu().clone())
+
+            currTrainLoss = np.mean(train_losses)
+            for d in tqdm(range(IMAGE_DIM), leave=False, desc='Correlation'):
+                val_correlations.append(pearsonr([r[2][d] for r in trainData], [s[d] for s in val_samples])[0])
+            currCorrelation = np.mean(val_correlations)
+            print(f'Epoch: {e}; Train Loss: {currTrainLoss}; Validation Correlation: {currCorrelation}')
+            if currCorrelation > maxCorrelation:
+                patience = 0
+                maxCorrelation = currCorrelation
+                torch.save({
+                    'model': model.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    'epoch': e
+                }, f'/data/theodoroubp/imageGen/save/base_model_{run}')
+            else:
+                patience += 1
+                if patience == PATIENCE:
+                    break

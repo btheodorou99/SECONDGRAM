@@ -24,6 +24,7 @@ EMBED_DIM = config.embed_dim
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 IMAGE_DIM = len(trainData[0][1])
 COND_DIM = len(trainData[0][0]) + IMAGE_DIM
+PRETRAIN_NOISE = config.pretrain_noise
 NUM_RUNS = config.num_runs
 
 BETA_START = config.beta_start
@@ -32,16 +33,24 @@ BETA = torch.linspace(BETA_START, BETA_END, NOISE_STEPS)
 ALPHA = 1 - BETA
 ALPHA_HAT = torch.cumprod(ALPHA, dim=0)
 
+def noise_images(x, t):
+    "Add noise to images at instant t"
+    sqrt_alpha_hat = torch.sqrt(ALPHA_HAT[t])[:, None].to(DEVICE)
+    sqrt_one_minus_alpha_hat = torch.sqrt(1 - ALPHA_HAT[t])[:, None].to(DEVICE)
+    Ɛ = torch.randn_like(x)
+    return sqrt_alpha_hat * x + sqrt_one_minus_alpha_hat * Ɛ, Ɛ
+
 def get_prebatch(dataset, loc, batch_size):
     data = dataset[loc:loc+batch_size]
     bs = len(data)
-    condData = torch.zeros(bs, COND_DIM)
-    imageData = torch.zeros(bs, IMAGE_DIM)
+    condData = torch.zeros(bs, COND_DIM, device=DEVICE)
+    imageData = torch.zeros(bs, IMAGE_DIM, device=DEVICE)
     for i, d in enumerate(data):
         imageData[i] = d[1]
         condData[i,:-IMAGE_DIM] = d[0]
         condData[i,-IMAGE_DIM:] = d[1]
-
+    
+    condData[:,-IMAGE_DIM:] = noise_images(condData[:,-IMAGE_DIM:], PRETRAIN_NOISE * torch.ones(bs, dtype=torch.long))[0]
     return imageData.to(DEVICE), condData.to(DEVICE)
 
 def get_batch(dataset, loc, batch_size):
@@ -78,14 +87,7 @@ def sample(model, labels):
 def sample_timesteps(n):
     return torch.randint(low=1, high=NOISE_STEPS, size=(n,)).to(DEVICE)
 
-def noise_images(x, t):
-    "Add noise to images at instant t"
-    sqrt_alpha_hat = torch.sqrt(ALPHA_HAT[t])[:, None].to(DEVICE)
-    sqrt_one_minus_alpha_hat = torch.sqrt(1 - ALPHA_HAT[t])[:, None].to(DEVICE)
-    Ɛ = torch.randn_like(x)
-    return sqrt_alpha_hat * x + sqrt_one_minus_alpha_hat * Ɛ, Ɛ
-
-for run in tqdm(range(NUM_RUNS), desc='Pretrained Self Runs'):
+for run in tqdm(range(NUM_RUNS), desc='Pretrained Noise Runs'):
     random.seed(run)
     torch.manual_seed(run)
     np.random.seed(run)
@@ -136,13 +138,13 @@ for run in tqdm(range(NUM_RUNS), desc='Pretrained Self Runs'):
                     'optimizer': optimizer.state_dict(),
                     'epoch': e,
                     'mode': 'pretrain'
-                }, f'/data/theodoroubp/imageGen/save/pretrained_model_self_{run}')
+                }, f'/data/theodoroubp/imageGen/save/pretrained_model_noise_{run}')
             else:
                 patience += 1
-                if patience == PATIENCE:
+                if patience == PATIENCE//10:
                     break
 
-    model.load_state_dict(torch.load(f'/data/theodoroubp/imageGen/save/pretrained_model_self_{run}', map_location='cpu')['model'])
+    model.load_state_dict(torch.load(f'/data/theodoroubp/imageGen/save/pretrained_model_noise_{run}', map_location='cpu')['model'])
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 
     patience = 0
@@ -186,7 +188,7 @@ for run in tqdm(range(NUM_RUNS), desc='Pretrained Self Runs'):
                     'optimizer': optimizer.state_dict(),
                     'epoch': e,
                     'mode': 'train'
-                }, f'/data/theodoroubp/imageGen/save/pretrained_model_self_{run}')
+                }, f'/data/theodoroubp/imageGen/save/pretrained_model_noise_{run}')
             else:
                 patience += 1
                 if patience == PATIENCE:

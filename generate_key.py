@@ -1,7 +1,7 @@
 import torch
 import random
 import pickle
-import numpy as np
+import numpy as np 
 from tqdm import tqdm
 from config import Config
 
@@ -65,43 +65,43 @@ def sample(model, labels):
     x = x.clamp(-1,1)
     return x
 
-for key in tqdm(model_map.keys(), desc='Keys'):
-    if key in ['bnn', 'proposed']:
-        from models.bnnModel import AutoEncoder
-    else:
-        from models.baseModel import AutoEncoder
+key = 'proposed'
+if key in ['bnn', 'proposed']:
+    from models.bnnModel import AutoEncoder
+else:
+    from models.baseModel import AutoEncoder
 
-    for run in tqdm(range(NUM_RUNS), desc=f'{key} Runs'):
-        random.seed(run)
-        torch.manual_seed(run)
-        np.random.seed(run)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed_all(run)
-    
-        model = AutoEncoder(IMAGE_DIM, embed_dim=EMBED_DIM, condition=True, cond_dim=COND_DIM).to(DEVICE)
-        model.load_state_dict(torch.load(f'/data/theodoroubp/imageGen/save/{model_map[key]}_{run}', map_location='cpu')['model'])
+for run in tqdm(range(NUM_RUNS), desc=f'{key} Runs'):
+    random.seed(run)
+    torch.manual_seed(run)
+    np.random.seed(run)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(run)
 
-        generatedTrainData = []
-        for i in tqdm(range(0, len(trainData), BATCH_SIZE), leave=False, desc='Train'):
-            _, condData = get_batch(trainData, i, BATCH_SIZE)
-            genData = sample(model, condData).to('cpu')
-            for j, d in enumerate(trainData[i:i+BATCH_SIZE]):
-                generatedTrainData.append(genData[j].clone())
+    model = AutoEncoder(IMAGE_DIM, embed_dim=EMBED_DIM, condition=True, cond_dim=COND_DIM).to(DEVICE)
+    model.load_state_dict(torch.load(f'/data/theodoroubp/imageGen/save/{model_map[key]}_{run}', map_location='cpu')['model'])
 
-        generatedValData = []
-        for i in tqdm(range(0, len(valData), BATCH_SIZE), leave=False, desc='Val'):
-            _, condData = get_batch(valData, i, BATCH_SIZE)
-            genData = sample(model, condData).to('cpu')
-            for j, d in enumerate(valData[i:i+BATCH_SIZE]):
-                generatedValData.append(genData[j].clone())
+    generatedTrainData = []
+    for i in tqdm(range(0, len(trainData), BATCH_SIZE), leave=False, desc='Train'):
+        _, condData = get_batch(trainData, i, BATCH_SIZE)
+        genData = sample(model, condData).to('cpu')
+        for j, d in enumerate(trainData[i:i+BATCH_SIZE]):
+            generatedTrainData.append(genData[j].clone())
 
-        generatedTestData = []
-        for i in tqdm(range(0, len(testData), BATCH_SIZE), leave=False, desc='Test'):
-            _, condData = get_batch(testData, i, BATCH_SIZE)
-            genData = sample(model, condData).to('cpu')
-            for j, d in enumerate(testData[i:i+BATCH_SIZE]):
-                generatedTestData.append(genData[j].clone())
+    generatedValData = []
+    for i in tqdm(range(0, len(valData), BATCH_SIZE), leave=False, desc='Val'):
+        _, condData = get_batch(valData, i, BATCH_SIZE)
+        genData = sample(model, condData).to('cpu')
+        for j, d in enumerate(valData[i:i+BATCH_SIZE]):
+            generatedValData.append(genData[j].clone())
 
-        pickle.dump(generatedTrainData, open(f'/data/theodoroubp/imageGen/generations/generatedTrainData_{key}_{run}.pkl', 'wb'))
-        pickle.dump(generatedValData, open(f'/data/theodoroubp/imageGen/generations/generatedValData_{key}_{run}.pkl', 'wb'))
-        pickle.dump(generatedTestData, open(f'/data/theodoroubp/imageGen/generations/generatedTestData_{key}_{run}.pkl', 'wb'))
+    generatedTestData = []
+    for i in tqdm(range(0, len(testData), BATCH_SIZE), leave=False, desc='Test'):
+        _, condData = get_batch(testData, i, BATCH_SIZE)
+        genData = sample(model, condData).to('cpu')
+        for j, d in enumerate(testData[i:i+BATCH_SIZE]):
+            generatedTestData.append(genData[j].clone())
+
+    pickle.dump(generatedTrainData, open(f'/data/theodoroubp/imageGen/generations/generatedTrainData_{key}_{run}.pkl', 'wb'))
+    pickle.dump(generatedValData, open(f'/data/theodoroubp/imageGen/generations/generatedValData_{key}_{run}.pkl', 'wb'))
+    pickle.dump(generatedTestData, open(f'/data/theodoroubp/imageGen/generations/generatedTestData_{key}_{run}.pkl', 'wb'))
