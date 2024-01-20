@@ -7,3 +7,4 @@
 
 module load python
 python /home/ImageGen/evaluation/evaluate_case_study.py
+python /home/ImageGen/evaluation/plotCaseStudy.py
