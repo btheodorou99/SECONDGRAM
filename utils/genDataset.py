@@ -53,9 +53,9 @@ scaleFirst = MinMaxScaler(feature_range=(-1,1))
 dfFirst[[c for c in dfFirst.columns if c.endswith('_2')]] = scaleFirst.fit_transform(dfFirst[[c for c in dfFirst.columns if c.endswith('_2')]])
 scaleSecond = MinMaxScaler(feature_range=(-1,1))
 dfSecond[[c for c in dfSecond.columns if c.endswith('_3')]] = scaleSecond.fit_transform(dfSecond[[c for c in dfSecond.columns if c.endswith('_3')]])
-pickle.dump(scaleStatic, open('/data/imageGen/scaleStatic.pkl', 'wb'))
-pickle.dump(scaleFirst, open('/data/imageGen/scaleFirst.pkl', 'wb'))
-pickle.dump(scaleSecond, open('/data/imageGen/scaleSecond.pkl', 'wb'))
+pickle.dump(scaleStatic, open('/home/SECONDGRAM/data/scaleStatic.pkl', 'wb'))
+pickle.dump(scaleFirst, open('/home/SECONDGRAM/data/scaleFirst.pkl', 'wb'))
+pickle.dump(scaleSecond, open('/home/SECONDGRAM/data/scaleSecond.pkl', 'wb'))
 
 staticFeatures = {row.eid: row.tolist()[1:] for _, row in dfStatic.iterrows()}
 firstFeatures = {row.eid: row.tolist()[1:] for _, row in dfFirst.iterrows()}
@@ -64,9 +64,9 @@ secondFeatures = {row.eid: row.tolist()[1:] for _, row in dfSecond.iterrows()}
 data = [(torch.FloatTensor(staticFeatures[e]), torch.FloatTensor(firstFeatures[e]), torch.FloatTensor(secondFeatures[e]) if e in secondFeatures else None) for e in staticFeatures if e==e and e in firstFeatures]
 trainData, testData = train_test_split(data, test_size=0.2)
 trainData, valData = train_test_split(trainData, test_size=0.1)
-pickle.dump(trainData, open('/data/imageGen/data/trainData.pkl', 'wb'))
-pickle.dump(valData, open('/data/imageGen/data/valData.pkl', 'wb'))
-pickle.dump(testData, open('/data/imageGen/data/testData.pkl', 'wb'))
+pickle.dump(trainData, open('/home/SECONDGRAM/data/trainData.pkl', 'wb'))
+pickle.dump(valData, open('/home/SECONDGRAM/data/valData.pkl', 'wb'))
+pickle.dump(testData, open('/home/SECONDGRAM/data/testData.pkl', 'wb'))
 
 for (k, d) in [('Overall', data), ('Train', trainData), ('Validation', valData), ('Test', testData)]:
     print(k)

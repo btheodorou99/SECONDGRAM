@@ -7,7 +7,7 @@ from models.ganModel import Generator, Discriminator
 from config import Config
 import torch.autograd as autograd
 
-trainData = pickle.load(open('/data/imageGen/data/trainData.pkl', 'rb')) + pickle.load(open('/data/imageGen/data/valData.pkl', 'rb'))
+trainData = pickle.load(open('/home/SECONDGRAM/data/trainData.pkl', 'rb')) + pickle.load(open('/home/SECONDGRAM/data/valData.pkl', 'rb'))
 trainData = [d for d in trainData if d[2] is not None]
 
 config = Config()
@@ -132,4 +132,4 @@ for e in range(EPOCHS):
                     'optimizer_G': optimizer_G,
                     'optimizer_D': optimizer_D,
                     'epoch': e
-                }, f'/data/imageGen/save/gan_model_{run}')
+                }, f'/home/SECONDGRAM/save/gan_model_{run}')

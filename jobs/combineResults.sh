@@ -6,4 +6,4 @@
 #SBATCH --job-name=combineResults
 
 module load python
-python /home/ImageGen/evaluation/combineResults.py
+python /home/SECONDGRAM/evaluation/combineResults.py

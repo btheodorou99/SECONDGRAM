@@ -23,13 +23,13 @@ sncArea = ['area_mtg_sn_snc_leftcit168',
 config = Config()
 NUM_RUNS = config.num_runs
 
-staticMap = pickle.load(open('/data/imageGen/staticMap.pkl', 'rb'))
-featureMap = pickle.load(open('/data/imageGen/featureMap.pkl', 'rb'))
-scaleFirst = pickle.load(open('/data/imageGen/scaleFirst.pkl', 'rb'))
-scaleSecond = pickle.load(open('/data/imageGen/scaleSecond.pkl', 'rb'))
+staticMap = pickle.load(open('/home/SECONDGRAM/data/staticMap.pkl', 'rb'))
+featureMap = pickle.load(open('/home/SECONDGRAM/data/featureMap.pkl', 'rb'))
+scaleFirst = pickle.load(open('/home/SECONDGRAM/data/scaleFirst.pkl', 'rb'))
+scaleSecond = pickle.load(open('/home/SECONDGRAM/data/scaleSecond.pkl', 'rb'))
 
 keys = ['real', 'secondgram']
-realData = pickle.load(open('/data/imageGen/data/trainData.pkl', 'rb')) + pickle.load(open('/data/imageGen/data/valData.pkl', 'rb')) + pickle.load(open('/data/imageGen/data/testData.pkl', 'rb'))
+realData = pickle.load(open('/home/SECONDGRAM/data/trainData.pkl', 'rb')) + pickle.load(open('/home/SECONDGRAM/data/valData.pkl', 'rb')) + pickle.load(open('/home/SECONDGRAM/data/testData.pkl', 'rb'))
 
 results = {}
 for k in tqdm(keys):
@@ -39,7 +39,7 @@ for k in tqdm(keys):
     else:
         data = []
         for i in range(1, NUM_RUNS+1):
-            generatedData = pickle.load(open(f'/data/imageGen/generations/generatedTrainData_{k}_{i}.pkl', 'rb')) + pickle.load(open(f'/data/imageGen/generations/generatedValData_{k}_{i}.pkl', 'rb')) + pickle.load(open(f'/data/imageGen/generations/generatedTestData_{k}_{i}.pkl', 'rb'))
+            generatedData = pickle.load(open(f'/home/SECONDGRAM/generations/generatedTrainData_{k}_{i}.pkl', 'rb')) + pickle.load(open(f'/home/SECONDGRAM/generations/generatedValData_{k}_{i}.pkl', 'rb')) + pickle.load(open(f'/home/SECONDGRAM/generations/generatedTestData_{k}_{i}.pkl', 'rb'))
             data += [(realData[i][0], realData[i][1], generatedData[i]) for i in range(len(realData)) if realData[i][2] is not None]
 
     data = [(p[0], scaleFirst.inverse_transform(p[1].reshape(1, -1)).squeeze(), scaleSecond.inverse_transform(p[2].reshape(1, -1)).squeeze()) for p in data]
@@ -100,14 +100,14 @@ for k in tqdm(keys):
     keyResults['Column Results'] = columnResults
     results[k] = keyResults
 
-pickle.dump(results, open('/data/imageGen/stats/caseStudyStats.pkl', 'wb'))
+pickle.dump(results, open('/home/SECONDGRAM/stats/caseStudyStats.pkl', 'wb'))
 
 for k in results:
     results[k].pop('Column Results')
 
 df = pd.DataFrame(results)
 df = df.T
-df.to_csv('/data/imageGen/stats/caseStudyStats.csv')
+df.to_csv('/home/SECONDGRAM/stats/caseStudyStats.csv')
 
 
 

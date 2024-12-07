@@ -6,11 +6,11 @@ from config import Config
 
 config = Config()
 NUM_RUNS = config.num_runs
-IMAGE_DIM = len(pickle.load(open('/data/imageGen/data/testData.pkl', 'rb'))[0][1])
+IMAGE_DIM = len(pickle.load(open('/home/SECONDGRAM/data/testData.pkl', 'rb'))[0][1])
 
 results = {}
-for fname in tqdm([f for f in os.listdir('/data/imageGen/stats/') if f.startswith('modelingStats_')]):
-    stats = pickle.load(open(f'/data/imageGen/stats/{fname}', 'rb'))
+for fname in tqdm([f for f in os.listdir('/home/SECONDGRAM/stats/') if f.startswith('modelingStats_')]):
+    stats = pickle.load(open(f'/home/SECONDGRAM/stats/{fname}', 'rb'))
     key = ('_').join(fname.split('_')[1:-1])
     run = int(fname.split('_')[-1].split('.')[0])
     for s in stats:
@@ -20,7 +20,7 @@ for fname in tqdm([f for f in os.listdir('/data/imageGen/stats/') if f.startswit
             results[s][key] = {}
         results[s][key][run] = stats[s]
           
-# pickle.dump(results, open(f'/data/imageGen/stats/modelingStats.pkl', 'wb'))
+# pickle.dump(results, open(f'/home/SECONDGRAM/stats/modelingStats.pkl', 'wb'))
 final_results = {}
 for key in list(results.values())[0]:
     final_results[key] = {}
@@ -41,4 +41,4 @@ for key in list(results.values())[0]:
 
 final_results = {s: {k: final_results[k][s] for k in final_results} for s in list(final_results.values())[0].keys()}
 print(final_results)
-pickle.dump(final_results, open(f'/data/imageGen/stats/modelingStatsFinal.pkl', 'wb'))
+pickle.dump(final_results, open(f'/home/SECONDGRAM/stats/modelingStatsFinal.pkl', 'wb'))

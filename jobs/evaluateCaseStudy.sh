@@ -6,5 +6,5 @@
 #SBATCH --job-name=combineResults
 
 module load python
-python /home/ImageGen/evaluation/evaluate_case_study.py
-python /home/ImageGen/evaluation/plotCaseStudy.py
+python /home/SECONDGRAM/evaluation/evaluate_case_study.py
+python /home/SECONDGRAM/evaluation/plotCaseStudy.py

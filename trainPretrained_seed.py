@@ -7,10 +7,10 @@ from models.diffusionModel import AutoEncoder
 from config import Config
 from scipy.stats import pearsonr
 
-trainData = pickle.load(open('/data/imageGen/data/trainData.pkl', 'rb'))
+trainData = pickle.load(open('/home/SECONDGRAM/data/trainData.pkl', 'rb'))
 pretrainData = [d for d in trainData]
 trainData = [d for d in trainData if d[2] is not None]
-valData = pickle.load(open('/data/imageGen/data/valData.pkl', 'rb'))
+valData = pickle.load(open('/home/SECONDGRAM/data/valData.pkl', 'rb'))
 prevalData = [d for d in valData]
 valData = [d for d in valData if d[2] is not None]
 
@@ -133,13 +133,13 @@ for e in range(EPOCHS):
                 'optimizer': optimizer.state_dict(),
                 'epoch': e,
                 'mode': 'pretrain'
-            }, f'/data/imageGen/save/pretrained_model_{run}')
+            }, f'/home/SECONDGRAM/save/pretrained_model_{run}')
         else:
             patience += 1
             if patience == PATIENCE:
                 break
 
-model.load_state_dict(torch.load(f'/data/imageGen/save/pretrained_model_{run}', map_location='cpu')['model'])
+model.load_state_dict(torch.load(f'/home/SECONDGRAM/save/pretrained_model_{run}', map_location='cpu')['model'])
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 
 patience = 0
@@ -183,7 +183,7 @@ for e in range(EPOCHS):
                 'optimizer': optimizer.state_dict(),
                 'epoch': e,
                 'mode': 'train'
-            }, f'/data/imageGen/save/pretrained_model_{run}')
+            }, f'/home/SECONDGRAM/save/pretrained_model_{run}')
         else:
             patience += 1
             if patience == PATIENCE:

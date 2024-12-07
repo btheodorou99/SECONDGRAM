@@ -10,14 +10,14 @@ key = 'secondgram'
 
 config = Config()
 NUM_RUNS = config.num_runs
-realTrainData = pickle.load(open('/data/imageGen/data/trainData.pkl', 'rb'))
-realTestData = pickle.load(open('/data/imageGen/data/testData.pkl', 'rb'))
+realTrainData = pickle.load(open('/home/SECONDGRAM/data/trainData.pkl', 'rb'))
+realTestData = pickle.load(open('/home/SECONDGRAM/data/testData.pkl', 'rb'))
 IMAGE_DIM = len(realTrainData[0][1])
 
 run = int(argv[1])
-generatedTrainData = pickle.load(open(f'/data/imageGen/generations/generatedTrainData_{key}_{run}.pkl', 'rb'))
+generatedTrainData = pickle.load(open(f'/home/SECONDGRAM/generations/generatedTrainData_{key}_{run}.pkl', 'rb'))
 generatedTrainData = [(r[0], r[1], r[2], g) for r, g in zip(realTrainData, generatedTrainData)]
-generatedTestData = pickle.load(open(f'/data/imageGen/generations/generatedTestData_{key}_{run}.pkl', 'rb'))
+generatedTestData = pickle.load(open(f'/home/SECONDGRAM/generations/generatedTestData_{key}_{run}.pkl', 'rb'))
 generatedTestData = [(r[0], r[1], r[2], g) for r, g in zip(realTestData, generatedTestData)]
 imputedTrainData = [(d[2], d[3]) for d in generatedTrainData if d[2] is not None]
 allTrainReal = [d[2] for d in generatedTrainData if d[2] is not None]
@@ -103,4 +103,4 @@ print('Mean Train vs. Synthetic Covariance Difference: {}'.format(matrixStats['T
 print('Mean Train Closeness: {}'.format(closenessStats['Train']['Overall']))
 print('Mean Test Closeness: {}'.format(closenessStats['Test']['Overall']))
 
-pickle.dump(stats, open(f'/data/imageGen/stats/modelingStats_{key}_{run}.pkl', 'wb'))
+pickle.dump(stats, open(f'/home/SECONDGRAM/stats/modelingStats_{key}_{run}.pkl', 'wb'))

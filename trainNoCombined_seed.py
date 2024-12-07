@@ -8,9 +8,9 @@ from config import Config
 from scipy.stats import pearsonr
 from torch.nn.utils import clip_grad_norm_
 
-trainData = pickle.load(open('/data/imageGen/data/trainData.pkl', 'rb'))
+trainData = pickle.load(open('/home/SECONDGRAM/data/trainData.pkl', 'rb'))
 trainData = [d for d in trainData if d[2] is not None]
-valData = pickle.load(open('/data/imageGen/data/valData.pkl', 'rb'))
+valData = pickle.load(open('/home/SECONDGRAM/data/valData.pkl', 'rb'))
 valData = [d for d in valData if d[2] is not None]
 
 config = Config()
@@ -131,7 +131,7 @@ for e in range(EPOCHS):
                 'model': model.state_dict(),
                 'optimizer': optimizer.state_dict(),
                 'epoch': e
-            }, f'/data/imageGen/save/secondgramNoCombined_model_{run}')
+            }, f'/home/SECONDGRAM/save/secondgramNoCombined_model_{run}')
         else:
             patience += 1
             if patience == PATIENCE:

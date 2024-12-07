@@ -6,12 +6,12 @@ from config import Config
 
 config = Config()
 NUM_RUNS = config.num_runs
-IMAGE_DIM = len(pickle.load(open('/data/imageGen/data/testData.pkl', 'rb'))[0][1])
+IMAGE_DIM = len(pickle.load(open('/home/SECONDGRAM/data/testData.pkl', 'rb'))[0][1])
 
-LABEL_IDX = [0, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+LABEL_IDX = [5, 7]
 results = {}
-for fname in [f for f in os.listdir('/data/imageGen/stats/') if f.startswith('trainingStats_')]:
-    stats = pickle.load(open(f'/data/imageGen/stats/{fname}', 'rb'))
+for fname in [f for f in os.listdir('/home/SECONDGRAM/stats/') if f.startswith('trainingStats_')]:
+    stats = pickle.load(open(f'/home/SECONDGRAM/stats/{fname}', 'rb'))
     lIdx = int(fname.split('_')[1])
     key = ('_').join(fname.split('_')[2:-1])
     run = int(fname.split('_')[-1].split('.')[0])
@@ -23,7 +23,7 @@ for fname in [f for f in os.listdir('/data/imageGen/stats/') if f.startswith('tr
             results[lIdx][fullKey] = {}
         results[lIdx][fullKey][run] = stats[k]
           
-pickle.dump(results, open(f'/data/imageGen/stats/trainingStats.pkl', 'wb'))
+pickle.dump(results, open(f'/home/SECONDGRAM/stats/trainingStats.pkl', 'wb'))
 
 final_results = {}
 for lIdx in results:
@@ -37,7 +37,7 @@ for lIdx in results:
 
 final_results = {lIdx: {stat: {key: final_results[lIdx][key][stat] for key in final_results[lIdx]} for stat in list(final_results[lIdx].values())[0].keys()} for lIdx in final_results}
 print(final_results)
-pickle.dump(final_results, open(f'/data/imageGen/stats/trainingStatsFinal.pkl', 'wb'))
+pickle.dump(final_results, open(f'/home/SECONDGRAM/stats/trainingStatsFinal.pkl', 'wb'))
 
 
 
@@ -45,8 +45,8 @@ pickle.dump(final_results, open(f'/data/imageGen/stats/trainingStatsFinal.pkl', 
 
 LABEL_IDX = [1, 2, 3, 4]
 results = {}
-for fname in [f for f in os.listdir('/data/imageGen/stats/') if f.startswith('unscaledTrainingStats_')]:
-    stats = pickle.load(open(f'/data/imageGen/stats/{fname}', 'rb'))
+for fname in [f for f in os.listdir('/home/SECONDGRAM/stats/') if f.startswith('unscaledTrainingStats_')]:
+    stats = pickle.load(open(f'/home/SECONDGRAM/stats/{fname}', 'rb'))
     lIdx = int(fname.split('_')[1])
     key = ('_').join(fname.split('_')[2:-1])
     run = int(fname.split('_')[-1].split('.')[0])
@@ -58,7 +58,7 @@ for fname in [f for f in os.listdir('/data/imageGen/stats/') if f.startswith('un
             results[lIdx][fullKey] = {}
         results[lIdx][fullKey][run] = stats[k]
           
-pickle.dump(results, open(f'/data/imageGen/stats/unscaledTrainingStats.pkl', 'wb'))
+pickle.dump(results, open(f'/home/SECONDGRAM/stats/unscaledTrainingStats.pkl', 'wb'))
 
 final_results = {}
 for lIdx in results:
@@ -72,14 +72,14 @@ for lIdx in results:
 
 final_results = {lIdx: {stat: {key: final_results[lIdx][key][stat] for key in final_results[lIdx]} for stat in list(final_results[lIdx].values())[0].keys()} for lIdx in final_results}
 print(final_results)
-pickle.dump(final_results, open(f'/data/imageGen/stats/unscaledTrainingStatsFinal.pkl', 'wb'))
+pickle.dump(final_results, open(f'/home/SECONDGRAM/stats/unscaledTrainingStatsFinal.pkl', 'wb'))
 
 
 
 
 results = {}
-for fname in tqdm([f for f in os.listdir('/data/imageGen/stats/') if f.startswith('modelingStats_')]):
-    stats = pickle.load(open(f'/data/imageGen/stats/{fname}', 'rb'))
+for fname in tqdm([f for f in os.listdir('/home/SECONDGRAM/stats/') if f.startswith('modelingStats_')]):
+    stats = pickle.load(open(f'/home/SECONDGRAM/stats/{fname}', 'rb'))
     key = ('_').join(fname.split('_')[1:-1])
     run = int(fname.split('_')[-1].split('.')[0])
     for s in stats:
@@ -89,7 +89,7 @@ for fname in tqdm([f for f in os.listdir('/data/imageGen/stats/') if f.startswit
             results[s][key] = {}
         results[s][key][run] = stats[s]
           
-# pickle.dump(results, open(f'/data/imageGen/stats/modelingStats.pkl', 'wb'))
+# pickle.dump(results, open(f'/home/SECONDGRAM/stats/modelingStats.pkl', 'wb'))
 
 final_results = {}
 for key in list(results.values())[0]:
@@ -111,4 +111,4 @@ for key in list(results.values())[0]:
 
 final_results = {s: {k: final_results[k][s] for k in final_results} for s in list(final_results.values())[0].keys()}
 print(final_results)
-pickle.dump(final_results, open(f'/data/imageGen/stats/modelingStatsFinal.pkl', 'wb'))
+pickle.dump(final_results, open(f'/home/SECONDGRAM/stats/modelingStatsFinal.pkl', 'wb'))

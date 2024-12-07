@@ -7,10 +7,10 @@ from models.diffusionModel import AutoEncoder
 from config import Config
 from scipy.stats import pearsonr
 
-trainData = pickle.load(open('/data/imageGen/data/trainData.pkl', 'rb'))
+trainData = pickle.load(open('/home/SECONDGRAM/data/trainData.pkl', 'rb'))
 unconditionedTrainData = [(d[0], d[1], None) for d in trainData]
 conditionedTrainData = [d for d in trainData if d[2] is not None]
-valData = pickle.load(open('/data/imageGen/data/valData.pkl', 'rb'))
+valData = pickle.load(open('/home/SECONDGRAM/data/valData.pkl', 'rb'))
 unconditionedValData = [d for d in valData if d[2] is None]
 valData = [d for d in valData if d[2] is not None]
 trainData = unconditionedTrainData + conditionedTrainData + unconditionedValData
@@ -145,7 +145,7 @@ for e in range(EPOCHS):
                 'optimizer': optimizer.state_dict(),
                 'epoch': e,
                 'mode': 'train'
-            }, f'/data/imageGen/save/secondgramNoGrad_model_{run}')
+            }, f'/home/SECONDGRAM/save/secondgramNoGrad_model_{run}')
         else:
             patience += 1
             if patience == PATIENCE:

@@ -10,9 +10,9 @@ model_map = {
     'gan': 'gan_model',
 }
 
-trainData = pickle.load(open('/data/imageGen/data/trainData.pkl', 'rb'))
-valData = pickle.load(open('/data/imageGen/data/valData.pkl', 'rb'))
-testData = pickle.load(open('/data/imageGen/data/testData.pkl', 'rb'))
+trainData = pickle.load(open('/home/SECONDGRAM/data/trainData.pkl', 'rb'))
+valData = pickle.load(open('/home/SECONDGRAM/data/valData.pkl', 'rb'))
+testData = pickle.load(open('/home/SECONDGRAM/data/testData.pkl', 'rb'))
 
 config = Config()
 BATCH_SIZE = config.batch_size
@@ -52,7 +52,7 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed_all(run)
         
 model = Generator(IMAGE_DIM, LATENT_DIM, embed_dim=EMBED_DIM, condition=True, cond_dim=COND_DIM).to(DEVICE)
-model.load_state_dict(torch.load(f'/data/imageGen/save/{model_map[key]}_{run}', map_location='cpu')['generator'])
+model.load_state_dict(torch.load(f'/home/SECONDGRAM/save/{model_map[key]}_{run}', map_location='cpu')['generator'])
 
 generatedTrainData = []
 for i in range(0, len(trainData), BATCH_SIZE):
@@ -75,6 +75,6 @@ for i in range(0, len(testData), BATCH_SIZE):
     for j, d in enumerate(testData[i:i+BATCH_SIZE]):
         generatedTestData.append(genData[j].clone())
 
-pickle.dump(generatedTrainData, open(f'/data/imageGen/generations/generatedTrainData_{key}_{run}.pkl', 'wb'))
-pickle.dump(generatedValData, open(f'/data/imageGen/generations/generatedValData_{key}_{run}.pkl', 'wb'))
-pickle.dump(generatedTestData, open(f'/data/imageGen/generations/generatedTestData_{key}_{run}.pkl', 'wb'))
+pickle.dump(generatedTrainData, open(f'/home/SECONDGRAM/generations/generatedTrainData_{key}_{run}.pkl', 'wb'))
+pickle.dump(generatedValData, open(f'/home/SECONDGRAM/generations/generatedValData_{key}_{run}.pkl', 'wb'))
+pickle.dump(generatedTestData, open(f'/home/SECONDGRAM/generations/generatedTestData_{key}_{run}.pkl', 'wb'))

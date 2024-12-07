@@ -19,8 +19,8 @@ from sklearn import metrics
 
 key = 'vanilla'
 
-testData = pickle.load(open('/data/imageGen/data/testData.pkl', 'rb'))
-scaler = pickle.load(open('/data/imageGen/scaleStatic.pkl', 'rb'))
+testData = pickle.load(open('/home/SECONDGRAM/data/testData.pkl', 'rb'))
+scaler = pickle.load(open('/home/SECONDGRAM/scaleStatic.pkl', 'rb'))
 LABEL_IDX = [1, 2, 3, 4]
 EPOCHS = 1000
 PATIENCE = 5
@@ -94,13 +94,13 @@ def train_model(model, label, trainDataset, valDataset, binary=False):
             if currValLoss < global_loss:
                 patience = 0
                 global_loss = currValLoss
-                torch.save(model.state_dict(), f'/data/imageGen/save/unscaled_downstream_model_{label}')
+                torch.save(model.state_dict(), f'/home/SECONDGRAM/save/unscaled_downstream_model_{label}')
             else:
                 patience += 1
                 if patience == PATIENCE:
                     break
 
-    model.load_state_dict(torch.load(f'/data/imageGen/save/unscaled_downstream_model_{label}', map_location='cpu'))
+    model.load_state_dict(torch.load(f'/home/SECONDGRAM/save/unscaled_downstream_model_{label}', map_location='cpu'))
     return model
 
 def test_model(model, testDataset, binary=False):
@@ -135,14 +135,14 @@ def test_model(model, testDataset, binary=False):
 testData = [(r[0], r[1], r[2], None) for r in testData]
 testData = [unscaleLabels(d) for d in testData]
 testData = [(d[0], d[1], d[2]) for d in testData]
-realTrainData = pickle.load(open('/data/imageGen/data/trainData.pkl', 'rb'))
-realValData = pickle.load(open('/data/imageGen/data/valData.pkl', 'rb'))
+realTrainData = pickle.load(open('/home/SECONDGRAM/data/trainData.pkl', 'rb'))
+realValData = pickle.load(open('/home/SECONDGRAM/data/valData.pkl', 'rb'))
 
 run = int(argv[1])
-generatedTrainData = pickle.load(open(f'/data/imageGen/generations/generatedTrainData_{key}_{run}.pkl', 'rb'))
+generatedTrainData = pickle.load(open(f'/home/SECONDGRAM/generations/generatedTrainData_{key}_{run}.pkl', 'rb'))
 generatedTrainData = [(r[0], r[1], r[2], g) for r, g in zip(realTrainData, generatedTrainData)]
 generatedTrainData = [unscaleLabels(d) for d in generatedTrainData]
-generatedValData = pickle.load(open(f'/data/imageGen/generations/generatedValData_{key}_{run}.pkl', 'rb'))
+generatedValData = pickle.load(open(f'/home/SECONDGRAM/generations/generatedValData_{key}_{run}.pkl', 'rb'))
 generatedValData = [(r[0], r[1], r[2], g) for r, g in zip(realValData, generatedValData)]
 generatedValData = [unscaleLabels(d) for d in generatedValData]
 for l_idx in LABEL_IDX:
@@ -194,11 +194,11 @@ for l_idx in LABEL_IDX:
     model = train_model(model, f'SubsetPairedSynthetic_{l_idx}_{key}_{run}', train6, val6, binary=binary)
     stats['SubsetPairedSynthetic'] = test_model(model, testDataPaired, binary=binary)
 
-    os.remove(f'/data/imageGen/save/unscaled_downstream_model_AllFirst_{l_idx}_{key}_{run}')
-    os.remove(f'/data/imageGen/save/unscaled_downstream_model_AllPairedImputed_{l_idx}_{key}_{run}')
-    os.remove(f'/data/imageGen/save/unscaled_downstream_model_AllPairedSynthetic_{l_idx}_{key}_{run}')
-    os.remove(f'/data/imageGen/save/unscaled_downstream_model_SubsetFirst_{l_idx}_{key}_{run}')
-    os.remove(f'/data/imageGen/save/unscaled_downstream_model_SubsetPairedReal_{l_idx}_{key}_{run}')
-    os.remove(f'/data/imageGen/save/unscaled_downstream_model_SubsetPairedSynthetic_{l_idx}_{key}_{run}')
+    os.remove(f'/home/SECONDGRAM/save/unscaled_downstream_model_AllFirst_{l_idx}_{key}_{run}')
+    os.remove(f'/home/SECONDGRAM/save/unscaled_downstream_model_AllPairedImputed_{l_idx}_{key}_{run}')
+    os.remove(f'/home/SECONDGRAM/save/unscaled_downstream_model_AllPairedSynthetic_{l_idx}_{key}_{run}')
+    os.remove(f'/home/SECONDGRAM/save/unscaled_downstream_model_SubsetFirst_{l_idx}_{key}_{run}')
+    os.remove(f'/home/SECONDGRAM/save/unscaled_downstream_model_SubsetPairedReal_{l_idx}_{key}_{run}')
+    os.remove(f'/home/SECONDGRAM/save/unscaled_downstream_model_SubsetPairedSynthetic_{l_idx}_{key}_{run}')
 
-    pickle.dump(stats, open(f'/data/imageGen/stats/unscaledTrainingStats_{l_idx}_{key}_{run}.pkl', 'wb'))
+    pickle.dump(stats, open(f'/home/SECONDGRAM/stats/unscaledTrainingStats_{l_idx}_{key}_{run}.pkl', 'wb'))

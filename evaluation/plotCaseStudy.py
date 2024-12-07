@@ -76,17 +76,17 @@ for col in parkTopFeatures:
 config = Config()
 NUM_RUNS = config.num_runs
 
-staticMap = pickle.load(open('/data/imageGen/staticMap.pkl', 'rb'))
-featureMap = pickle.load(open('/data/imageGen/featureMap.pkl', 'rb'))
-scaleFirst = pickle.load(open('/data/imageGen/scaleFirst.pkl', 'rb'))
-scaleSecond = pickle.load(open('/data/imageGen/scaleSecond.pkl', 'rb'))
+staticMap = pickle.load(open('/home/SECONDGRAM/data/staticMap.pkl', 'rb'))
+featureMap = pickle.load(open('/home/SECONDGRAM/data/featureMap.pkl', 'rb'))
+scaleFirst = pickle.load(open('/home/SECONDGRAM/data/scaleFirst.pkl', 'rb'))
+scaleSecond = pickle.load(open('/home/SECONDGRAM/data/scaleSecond.pkl', 'rb'))
 
 key = 'secondgram'
 RUN_NUM = random.randint(1, NUM_RUNS)
 NUM_SAMPLES = 3
 
-realData = pickle.load(open('/data/imageGen/data/trainData.pkl', 'rb')) + pickle.load(open('/data/imageGen/data/valData.pkl', 'rb')) + pickle.load(open('/data/imageGen/data/testData.pkl', 'rb'))
-generatedData = pickle.load(open(f'/data/imageGen/generations/generatedTrainData_{key}_{RUN_NUM}.pkl', 'rb')) + pickle.load(open(f'/data/imageGen/generations/generatedValData_{key}_{RUN_NUM}.pkl', 'rb')) + pickle.load(open(f'/data/imageGen/generations/generatedTestData_{key}_{RUN_NUM}.pkl', 'rb'))
+realData = pickle.load(open('/home/SECONDGRAM/data/trainData.pkl', 'rb')) + pickle.load(open('/home/SECONDGRAM/data/valData.pkl', 'rb')) + pickle.load(open('/home/SECONDGRAM/data/testData.pkl', 'rb'))
+generatedData = pickle.load(open(f'/home/SECONDGRAM/generations/generatedTrainData_{key}_{RUN_NUM}.pkl', 'rb')) + pickle.load(open(f'/home/SECONDGRAM/generations/generatedValData_{key}_{RUN_NUM}.pkl', 'rb')) + pickle.load(open(f'/home/SECONDGRAM/generations/generatedTestData_{key}_{RUN_NUM}.pkl', 'rb'))
 allData = [(realData[i][0], realData[i][1], realData[i][2], generatedData[i]) for i in range(len(realData)) if realData[i][2] is not None]
 
 allData = [(p[0], scaleFirst.inverse_transform(p[1].reshape(1, -1)).squeeze(), scaleSecond.inverse_transform(p[2].reshape(1, -1)).squeeze(), scaleSecond.inverse_transform(p[3].reshape(1, -1)).squeeze()) for p in allData]
@@ -100,8 +100,8 @@ minMaxFeatures = {f: (min([img[featureMap[f]] for p in park+noPark for img in p[
 
 templatedImage = nib.load(brainTemplate).get_fdata()
 allIdx = fullFeatList.region_index.unique().tolist()
-if not os.path.exists(f'/data/imageGen/temp/template_background.png'):
-    os.makedirs('/data/imageGen/temp/', exist_ok=True)
+if not os.path.exists(f'/home/SECONDGRAM/temp/template_background.png'):
+    os.makedirs('/home/SECONDGRAM/temp/', exist_ok=True)
     segmentedImage = templatedImage.copy()
     n_columns = 3
     num_rows = 2
@@ -130,7 +130,7 @@ if not os.path.exists(f'/data/imageGen/temp/template_background.png'):
         sns.heatmap(V, cmap=cmap, mask=V == np.nan, ax=ax, center=0,
                         cbar=None, cbar_ax=None, rasterized=True)
     fig.tight_layout()
-    plt.savefig(f'/data/imageGen/temp/template_background.png', dpi=200)
+    plt.savefig(f'/home/SECONDGRAM/temp/template_background.png', dpi=200)
     plt.close()
 
     
@@ -169,15 +169,15 @@ for (k, d) in [('Parkinsonism', park), ('NoParkinsonism', noPark)]:
                                 cbar=None, cbar_ax=None, rasterized=True)
 
             fig.tight_layout()
-            plt.savefig(f'/data/imageGen/temp/{k}_{i}_{k2}.png', dpi=200)
+            plt.savefig(f'/home/SECONDGRAM/temp/{k}_{i}_{k2}.png', dpi=200)
             plt.close()
 
-            image1 = plt.imread(f'/data/imageGen/temp/template_background.png')
-            image2 = plt.imread(f'/data/imageGen/temp/{k}_{i}_{k2}.png')
+            image1 = plt.imread(f'/home/SECONDGRAM/temp/template_background.png')
+            image2 = plt.imread(f'/home/SECONDGRAM/temp/{k}_{i}_{k2}.png')
             fig, ax = plt.subplots()
             ax.imshow(image2)
             ax.imshow(image1, alpha=0.15)
             ax.set_axis_off()
             fig.tight_layout()
-            plt.savefig(f'/data/imageGen/plots/{k}_{i}_{k2}.png', dpi=300, bbox_inches='tight')
+            plt.savefig(f'/home/SECONDGRAM/plots/{k}_{i}_{k2}.png', dpi=300, bbox_inches='tight')
             plt.close()

@@ -6,4 +6,4 @@
 #SBATCH --job-name=combineResults
 
 module load python
-python /home/ImageGen/evaluation/plotCovariate.py
+python /home/SECONDGRAM/evaluation/plotCovariate.py
